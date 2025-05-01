@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "geometric-timer-458515-r2",
+  "private_key_id": "de9b78fd102c6772bd49055ebe8a7660fe8169a3",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC2Eh1Qdb6M+75Q\nCDcOj54lftisAgvYnScR0aOgRBeMV/F4b3JRBWdFT5vpLBIuGvH0sxLNv1pq0PfV\nBIuK3a1QmbSeqDvZVd7Ea6z4sqalr25Kzos2Unbcus9kkGCkSHNqVMTJHylmnxB1\n5cSEssO/T48/1E3iXZPDHvxR+tcQMV2K7g3LeaRpDi13CLOOwovEP3FJT7yCDMSB\nOPy4e2qQ9PMShOOhawjNwxraAlikshHCmjCQpDo/OUOJYZN7HiK2A9/LyLu/svy8\n+0DuyNjoSTzt+1OXrkGMRquRD7Dis3TAKV8V49Uz2PwdtCpHya6mbpeRG7+nfRri\n/sa7ItmDAgMBAAECggEADPUNEQTQIshnqtpq0KZ34sM8OEGNBkVo2mPI+UbfRiWc\nEa4cvJdd2hjoR5fTU2Sng3qbA/lyPdfRS1+fbqqIAwxtRj1CxRzPVbsz/B76rR/n\nAXvhfGQyAVNqHwYHWqmtTQvrVUTadWssiLdpXOg79gl7cFdzk4CFW4WA/3SSiZxa\n1ytsuj/K7Fix8ajhqU/T0VLKWwov/vF+sw93st55AFNdXNaOe/qXN5TyljutVZLl\nUphCVb+b3udXrO0Q9Ma1O1SXPuJksv5IQ+WBmJRBVPWuH/FbHilvMTUYkBJXF7Lf\ngVMgt62hLFkv827w2P8ZJ+WaMMJZ4f+PuYurCCmPgQKBgQDxqssNv/Q6X2B0tXTx\nVyQO2ETdiqNBZyD7Qu7Y3sd0+3pgW7U002hQSmhtcZKCXFfok93+VThodzaLFIUb\nXDrf1A725y1B0GpkAPMM6m+1dQdWb7ZXGhytKHUZwti1HR+Kux4DCZ8hkiEedIob\nMZUpyPN83LKpk2zmPYtImZ7jqQKBgQDA3nm6yynLu1GaVBWNZ2ZwkEgY6eVl90V+\nWEwvI5LQU195rH8kyR8WXOxXm3f7+i2m57t8jP0TSj/VpHa2X3R+7bZqPTeaIg50\nm6kN62/eASS/+3GbeV3o/iY4YgjsSoUHNaQOnGL0EnB+j1FX+2wq5zWcVN/wg/Ti\n6VOgK81PSwKBgQC3Yufbc0Kd2SqU5e3sBjhym2MGyuHAC8ZXZR9iqwuolfzziiQk\nBhkudIhyJLENA44iC7N2AK1heLWHLPclIAP9Pips6ljJjKJvaNkHgA9tH3WF/hfc\nWRBRxlW2SsmwBn2dBQltPKvpCb7gIYd7w1Bx+O/sXH2neRw2S5WabhjIoQKBgEil\nQ7qc/ZA0bScxFrEdSlOJtO5VY0eF3NIbFg8HWixHywV8eKN1cdUtiQPylj393KYq\nUM84F7blV6fz+5bz22BXz0ay6jePLlyzqPiKPqejTKFXZ1JFY57345OHMY82/mZZ\nyQKL2yXNsDurZds642JBlkrdGUBxo5K4ifwho4KDAoGAeLCd7uTvbAMwL5bLM4rE\n3VRS3AGvH7k+oARRbXfWu+Wur2SBAYUQ+iumMx5H0GhUqXnKU8rvu66tlnFhBo0l\njT1XfvO81Td2RK2ClzHnKtbhcjV2TP7hgDNaGPZOOYxizQNPSZ6bPmtnguMuH/ET\nArdgRG2FzrXegoLsLknkw5E=\n-----END PRIVATE KEY-----\n",
+  "client_email": "winxybot-sheets-access@geometric-timer-458515-r2.iam.gserviceaccount.com",
+  "client_id": "106962159236497247510",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/winxybot-sheets-access%40geometric-timer-458515-r2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
