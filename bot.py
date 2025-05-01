@@ -4,14 +4,13 @@ import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-def send_message(msg):
+def send_message(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": CHAT_ID,
-        "text": msg,
-        "parse_mode": "HTML"
+        "text": text
     }
     requests.post(url, data=payload)
 
 if __name__ == "__main__":
-    send_message("✅ WinxyBot Alert\n📊 Test alert successful. Bot is now live and synced.")
+    send_message("✅ Render bot running and ready for Google Sheets sync.")
