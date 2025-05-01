@@ -1,31 +1,23 @@
-import requests
-import os
-
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-
-def send_message(text):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": text
-    }
-    requests.post(url, data=payload)
-
-if __name__ == "__main__":
-import requests
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import requests
 import os
 
-# Telegram config
+# Setup Telegram bot credentials
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-# Google Sheets config
+# Google Sheet details
 SHEET_NAME = "WinxyBot - Bet Feed"
-WORKSHEET_NAME = "Sheet1"  # adjust if named differently
+WORKSHEET_NAME = "Sheet1"
 
+# Load Google credentials from file
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("geometric-timer-458515-r2-de9b78fd102c.json", scope)
+client = gspread.authorize(creds)
+sheet = client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
+
+# Send message to Telegram
 def send_message(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
@@ -35,25 +27,22 @@ def send_message(msg):
     }
     requests.post(url, data=payload)
 
+# Process new bets
 def check_new_bets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("your-google-credentials.json", scope)
-    client = gspread.authorize(creds)
-
-    sheet = client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
     data = sheet.get_all_records()
-
-    for idx, row in enumerate(data, start=2):  # row 2 = index 0
-        if str(row["Active"]).lower() == "true" and str(row["Alert Sent?"]).lower() != "true":
+    for idx, row in enumerate(data, start=2):  # Start from second row
+        if str(row.get("Active", "")).lower() == "true" and str(row.get("Alert Sent?", "")).lower() != "true":
             msg = f"📢 <b>{row['Sport']} - {row['Category']}</b>\n"
             msg += f"🔮 <b>{row['Bet']}</b>\n"
             msg += f"✅ Confidence: {row['Confidence %']}%\n"
             msg += f"🕒 Match Time: {row['Match Time']}\n"
-            msg += f"🧠 Notes: {row['Risk Notes']}"
+            msg += f"📊 Odds: {row['Team 1']} ({row['Odds 1']}) vs {row['Team 2']} ({row['Odds 2']})\n"
+            msg += f"🧠 Notes: {row['Risk Notes']}\n"
             send_message(msg)
 
-            # Mark as sent in sheet
-            sheet.update_cell(idx, 8, "TRUE")  # column H = Alert Sent?
+            # Mark as sent in sheet (column H = 8th col)
+            sheet.update_cell(idx, 8, "TRUE")
 
+# Entry point
 if __name__ == "__main__":
     check_new_bets()
