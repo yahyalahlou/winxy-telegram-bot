@@ -1,4 +1,4 @@
-# winxybot_agent.py — LIVE SPORTS + GPT FILTERED
+# winxybot_agent.py — FIXED FOR OPENAI v1.0+
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -51,14 +51,14 @@ def ask_gpt_if_bettable(match_data):
     Include confidence % and 1-sentence reasoning.
     """
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4-1106-preview",
+        chat_response = openai.chat.completions.create(
+            model="gpt-4",
             messages=[
                 {"role": "user", "content": prompt}
             ],
             temperature=0.4
         )
-        return response.choices[0].message.content.strip()
+        return chat_response.choices[0].message.content.strip()
     except Exception as e:
         print(f"[ERROR] GPT failed: {e}")
         return None
