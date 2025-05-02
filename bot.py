@@ -13,7 +13,7 @@ WORKSHEET_NAME = "Sheet1"
 
 # Load Google credentials from file
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("winxybot-gsheetaccess-f3e2f4242f4c.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("winxybot-gsheetaccess-90658a4ae6f6.json", scope)
 client = gspread.authorize(creds)
 sheet = client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
 
