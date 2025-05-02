@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "winxybot-gsheetaccess",
+  "private_key_id": "cee2b3cd0651c2d5da75c4b21501b1196a800e12",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDJKQDv8DYv7hu2\n2knp5/XtGKevzzqKEW46WmpyaQWt3dBhgtowYHUva7lEpEiKqSHzfC0x82CPyFVK\nwTsYCETHKEBlfVZK0SA1f+OifGY4c7a415bjpi3Blg+E1BnWG3JAuqP1EXkIsjam\nKTpfn+0k3ClkPKoFz9d0weE2UfnYN7cv17bjWUz4ZvTyfxJ4bzL+6WpIyKZ0830C\nLZx2GDifcpdjTu1crdAY4qjXXMxAoKErk8FndTe0Kujf6ImcWiuFZNZqZN943MyL\ngtLDozdzUK2Gq+OiAtLERRLbw2hhklNvgkG+Q05CF02MCFgYaaSC08BRObyhIQNm\n3TsrUu5rAgMBAAECggEAFEDnIcFfS1MfgjkXQRBEUBNv6sEkJTudDA4Hcq6FTlyr\neu3oVv+XPOeNN06NKTzfOLszd7iH6+IhSE4NS52lgyHX3gARHKZSpmBShI0e46cu\n6gx22kPkjn2z4U1Trp2D0uWX1XhlZc0/uFolUPRytYffOQLsoXosOMq+iLAXRkAk\nFbgnQ3JO2bcJ8kPoyel73OMICskooB1jA6Ymx2iNN5dxjy9MLuZ5uWCk7o6H0roK\n8LzVMMd8y4ICoXfcnaO7zaproLQ9Eu1k7RHdycPEtPOJBIATNl6B/2g0BNj7SaEV\nsL3CnycSYOaqD6eP6UiqTG3ucivGRGn48GJ6NxdvWQKBgQDusx5W41eHyiUtFkcV\nLIRdFHxZTA0zjaiAZ0L0eMWSPj2tLyMCcjdjsXZaDjSpaVDtvkgMYeL2Btu+7Hu/\npMrM9JdCABsrJ5cxRKb1euaFiYfmb6qM4rhHiRumt6opiIQX0Rth93rdmj4OAljb\nk05T/evIF2vwYFX8oBSEpA2BQwKBgQDXvV6cXSK3bSaT9TWZ8fTkhxdZCi/Xpdyf\n4TC+x8BNzSID1+sm1GaICG85k1jjiMXKoskotYvVM5yO0rg50V7bOSwJzyUlp9Qc\nzQuW/7M6zIC2yztP8MmH1vYnzHT0pRel6LgF0e30i8wFHfYw2lwGM07JJFw0GsNU\nvncjmkaXuQKBgFOF8ZPNsQ8euKtyJCVQknBPfsNwTR5A7zke6NrKd7eYd9RlrgZp\nGOCVdChG2D5/T4YhEuziQ5x7AeFotlR0wVG+ND8v8lHDZLAkqZc0Df2kBh2n7TGn\nE3xUiYxor+4girgav04kXqW0Fwqn35fVj47sRtiY+Xf+/ZeMHCHdlawpAoGAMsl9\nsEmslom3fzVGfQscn3+921QulxGQsoKMuxzDBI256DW4QdfWm0eBB4jMcCQOi/lu\naYrzdClGPckVXWcQcYMv/s8o64hqwqzygYWIZ9skoeON/u+sQbI1GIFlNwJ2YrQ6\nPgSBhAQ07y9yeWWuLDd/4JISsqFqQlTkLxlubOECgYBLlvc7zQItg1FjyXQDLFRt\n9G+3TNFwBhh4oDUCPxex++SJNj727os8g8x0sgd7Ca9OEXS3ks2ycQMbSD+/+xO5\n1RZPu4l+4W8R+Q7C8tENsxzMIXKGjCeKRatE+7hewMsKA7zJRdFuUr3hPsb30CdJ\n+4U0aSEMRZO5u4cpr+6h3A==\n-----END PRIVATE KEY-----\n",
+  "client_email": "winxybot-sheets-access-439@winxybot-gsheetaccess.iam.gserviceaccount.com",
+  "client_id": "107647646890926425942",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/winxybot-sheets-access-439%40winxybot-gsheetaccess.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
