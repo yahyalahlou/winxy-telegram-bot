@@ -1,30 +1,48 @@
-import time
 import logging
-from oddsapi_wrapper import fetch_raw_odds_data, get_filtered_matches
+from oddsapi_wrapper import fetch_raw_odds_data
 from winxylogic import calculate_winxy_confidence
 from telegram_sender import send_telegram_alert
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-def main():
+def run_agent():
     logging.info("🔍 DEBUG: Starting scan")
-
     try:
-        matches = get_filtered_matches()
-        logging.info(f"✅ Retrieved {len(matches)} matches")
+        raw_matches = fetch_raw_odds_data()
+        logging.info(f"✅ {len(raw_matches)} raw matches fetched from OddsAPI")
 
-        for match in matches:
-            confidence = calculate_winxy_confidence(match)
-            if confidence >= 80:
-                logging.info(f"🚀 HIGH CONFIDENCE {confidence}% → {match.get('teams')}")
-                send_telegram_alert(match, confidence)
+        for match in raw_matches:
+            team_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['name']
+            team_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['name']
+            odds_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['price']
+            odds_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['price']
+            sport_title = match['sport_title']
+            commence_time = match['commence_time']
+
+            confidence_score, reason = calculate_winxy_confidence(
+                team_1=team_1,
+                team_2=team_2,
+                odds_1=odds_1,
+                odds_2=odds_2,
+                sport=sport_title
+            )
+
+            if confidence_score >= 80:
+                message = (
+                    f"📢 *NEW BET ALERT*\n"
+                    f"🏆 Sport: {sport_title}\n"
+                    f"👥 Match: {team_1} vs {team_2}\n"
+                    f"📈 Confidence: {confidence_score}%\n"
+                    f"🕒 Match Time: {commence_time}\n"
+                    f"💡 Reason: {reason}\n"
+                    f"💰 Odds: {team_1} ({odds_1}) vs {team_2} ({odds_2})"
+                )
+                send_telegram_alert(message)
             else:
-                logging.info(f"⚠️ Skipping low-confidence match ({confidence}%)")
+                logging.info(f"⚠️ Skipping low-confidence match ({confidence_score}%)")
 
     except Exception as e:
-        logging.exception(f"CRITICAL ERROR during scan: {e}")
+        logging.error(f"💥 Critical failure during agent run: {e}")
 
 if __name__ == "__main__":
-    while True:
-        main()
-        time.sleep(6 * 60 * 60)  # 6 hours between scans
+    run_agent()
