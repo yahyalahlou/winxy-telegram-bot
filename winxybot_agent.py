@@ -1,65 +1,80 @@
+# PATCH: winxybot_agent.py — Updated to handle API and scraping errors safely
+
+import os
 import requests
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from winxylogic import calculate_winxy_confidence
 from scraper_flashscore import fetch_flashscore_matches
 from scraper_sofascore import fetch_sofascore_matches
-from scraper_espn import scrape_espn
-from scraper_rotowire import scrape_rotowire_nba_injuries
-from scraper_tennis_elo import fetch_tennis_elo
-import os
-import time
+from winxylogic import calculate_winxy_confidence  # ensure this file exists
 
-SHEET_NAME = "WinxyBot - Bet Feed"
-WORKSHEET_NAME = "Sheet1"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("winxybot-gsheetaccess-cee2b3cd0651.json", scope)
-client = gspread.authorize(creds)
-sheet = client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
+ODDS_API_URL = "https://api.the-odds-api.com/v4/sports/upcoming/odds"
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-# Sample OddsAPI Pull (you can expand this)
-def fetch_oddsapi_matches():
-    key = os.getenv("ODDS_API_KEY")
-    url = f"https://api.the-odds-api.com/v4/sports/tennis/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey={key}"
+
+def fetch_odds():
     try:
-        res = requests.get(url)
+        res = requests.get(ODDS_API_URL, params={
+            "apiKey": ODDS_API_KEY,
+            "regions": "us",
+            "markets": "h2h",
+            "oddsFormat": "decimal"
+        }, timeout=10)
+        res.raise_for_status()
         return res.json()
     except Exception as e:
-        print("OddsAPI error:", e)
+        print(f"Odds API error: {e}")
         return []
 
-# Trigger all scraper modules and logic
-odds_matches = fetch_oddsapi_matches()
-flash_matches = fetch_flashscore_matches()
-sofa_matches = fetch_sofascore_matches()
-espn_insights = scrape_espn()
-rotowire_risks = scrape_rotowire_nba_injuries()
 
-# Now process each match
-for match in odds_matches:
-    team_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['name']
-    team_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['name']
-    odds_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['price']
-    odds_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['price']
-    match_time = match['commence_time']
+def parse_match_data(raw_match):
+    try:
+        bookmakers = raw_match.get("bookmakers", [])
+        if not bookmakers:
+            return None
 
-    bet_data = {
-        "odds": min(odds_1, odds_2),
-        "flashscore_form": ["W", "L", "W"],  # replace later with lookup from flash_matches
-        "sofascore_matchup": {"rating_diff": 2.0},  # mock data for now
-        "injuries": [],  # can cross-check from rotowire_risks
-        "tennis_elo": fetch_tennis_elo(team_1),
-        "expert_picks": len([p for p in espn_insights if team_1.lower() in p['title'].lower()])
-    }
+        market = bookmakers[0].get("markets", [])[0]
+        outcomes = market.get("outcomes", [])
+        if len(outcomes) < 2:
+            return None
 
-    confidence = calculate_winxy_confidence(bet_data)
-    if confidence >= 80:
-        sheet.append_row([
-            "Tennis", "Pre-match", f"{team_1} to win",
-            f"{confidence}%", match_time, "None",
-            team_1, odds_1, team_2, odds_2,
-            "WinxyLogic", "Yes", ""
-        ])
+        team_1 = outcomes[0]["name"]
+        team_2 = outcomes[1]["name"]
+        odds_1 = outcomes[0]["price"]
+        odds_2 = outcomes[1]["price"]
 
-    time.sleep(1.5)  # space out API requests safely
+        return {
+            "sport": raw_match.get("sport_key"),
+            "teams": [team_1, team_2],
+            "odds": [odds_1, odds_2],
+            "commence_time": raw_match.get("commence_time")
+        }
+    except Exception as err:
+        print(f"Error parsing match data: {err}")
+        return None
+
+
+def send_telegram(msg):
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        payload = {"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"}
+        requests.post(url, json=payload)
+    except Exception as e:
+        print(f"Telegram error: {e}")
+
+
+if __name__ == "__main__":
+    raw_matches = fetch_odds()
+    web_matches = fetch_flashscore_matches() + fetch_sofascore_matches()
+
+    for raw in raw_matches:
+        parsed = parse_match_data(raw)
+        if not parsed:
+            continue
+
+        confidence = calculate_winxy_confidence(parsed, web_matches)
+        if confidence >= 80:
+            msg = f"*BET ALERT*\n{parsed['teams'][0]} vs {parsed['teams'][1]}\nConfidence: {confidence}%\nOdds: {parsed['odds']}\nTime: {parsed['commence_time']}"
+            send_telegram(msg)
