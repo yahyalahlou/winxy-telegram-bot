@@ -1,134 +1,65 @@
-# winxybot_agent.py — FIXED FOR OPENAI v1.0+
-
+import requests
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import datetime
-import openai
+from winxylogic import calculate_winxy_confidence
+from scraper_flashscore import fetch_flashscore_matches
+from scraper_sofascore import fetch_sofascore_matches
+from scraper_espn import scrape_espn
+from scraper_rotowire import scrape_rotowire_nba_injuries
+from scraper_tennis_elo import fetch_tennis_elo
 import os
-import requests
+import time
 
-# === SETUP GOOGLE SHEETS ===
+SHEET_NAME = "WinxyBot - Bet Feed"
+WORKSHEET_NAME = "Sheet1"
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("winxybot-gsheetaccess-cee2b3cd0651.json", scope)
 client = gspread.authorize(creds)
-sheet = client.open("WinxyBot - Bet Feed").worksheet("Sheet1")
+sheet = client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
 
-# === OPENAI SETUP ===
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# === ODDS API SETUP ===
-odds_api_key = os.getenv("SPORTS_API_KEY")
-odds_url = "https://api.the-odds-api.com/v4/sports/upcoming/odds"
-
-# === FETCH MATCHES FROM THE ODDS API ===
-def get_live_matches():
-    params = {
-        "apiKey": odds_api_key,
-        "regions": "us",
-        "markets": "h2h",
-        "oddsFormat": "decimal",
-        "dateFormat": "iso"
-    }
+# Sample OddsAPI Pull (you can expand this)
+def fetch_oddsapi_matches():
+    key = os.getenv("ODDS_API_KEY")
+    url = f"https://api.the-odds-api.com/v4/sports/tennis/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey={key}"
     try:
-        response = requests.get(odds_url, params=params)
-        response.raise_for_status()
-        return response.json()
+        res = requests.get(url)
+        return res.json()
     except Exception as e:
-        print(f"[ERROR] Failed to fetch matches: {e}")
+        print("OddsAPI error:", e)
         return []
 
-# === ASK GPT TO FILTER BETS ===
-def ask_gpt_if_bettable(match_data):
-    prompt = f"""
-    Match: {match_data['home_team']} vs {match_data['away_team']}
-    Odds: {match_data['home_odds']} vs {match_data['away_odds']}
-    League: {match_data['sport']}
-    Starts at: {match_data['commence_time']}
+# Trigger all scraper modules and logic
+odds_matches = fetch_oddsapi_matches()
+flash_matches = fetch_flashscore_matches()
+sofa_matches = fetch_sofascore_matches()
+espn_insights = scrape_espn()
+rotowire_risks = scrape_rotowire_nba_injuries()
 
-    Context: Bookmaker odds, market sentiment, and performance trends assumed.
+# Now process each match
+for match in odds_matches:
+    team_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['name']
+    team_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['name']
+    odds_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['price']
+    odds_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['price']
+    match_time = match['commence_time']
 
-    Should we bet on the favorite (lower odds)? YES or NO.
-    Include confidence % and 1-sentence reasoning.
-    """
-    try:
-        chat_response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4
-        )
-        return chat_response.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"[ERROR] GPT failed: {e}")
-        return None
+    bet_data = {
+        "odds": min(odds_1, odds_2),
+        "flashscore_form": ["W", "L", "W"],  # replace later with lookup from flash_matches
+        "sofascore_matchup": {"rating_diff": 2.0},  # mock data for now
+        "injuries": [],  # can cross-check from rotowire_risks
+        "tennis_elo": fetch_tennis_elo(team_1),
+        "expert_picks": len([p for p in espn_insights if team_1.lower() in p['title'].lower()])
+    }
 
-# === CHECK FOR DUPLICATES ===
-def is_duplicate(bet):
-    existing_bets = sheet.col_values(4)
-    return bet in existing_bets
+    confidence = calculate_winxy_confidence(bet_data)
+    if confidence >= 80:
+        sheet.append_row([
+            "Tennis", "Pre-match", f"{team_1} to win",
+            f"{confidence}%", match_time, "None",
+            team_1, odds_1, team_2, odds_2,
+            "WinxyLogic", "Yes", ""
+        ])
 
-# === PUSH BET TO SHEET ===
-def push_bet_to_sheet(bet_text, match_data, confidence):
-    row = [
-        "TRUE",
-        match_data["sport"],
-        match_data["bookmaker"],
-        bet_text,
-        confidence,
-        "Yes",
-        match_data["commence_time"],
-        "",
-        "Auto-approved via GPT & Odds API",
-        match_data["home_team"],
-        match_data["home_odds"],
-        match_data["away_team"],
-        match_data["away_odds"],
-        "WinxyBot GPT-4",
-        "Yes"
-    ]
-    sheet.append_row(row, value_input_option="USER_ENTERED")
-    print(f"[ADDED] Bet inserted: {bet_text}")
-
-# === MAIN ===
-if __name__ == "__main__":
-    print("[INFO] WinxyBot LIVE Agent started...")
-    games = get_live_matches()
-
-    for game in games:
-        if not game.get("bookmakers"):
-            continue
-
-        bookmaker = game["bookmakers"][0]
-        outcomes = bookmaker["markets"][0]["outcomes"]
-
-        if len(outcomes) < 2:
-            continue
-
-        home_team = outcomes[0]["name"]
-        home_odds = outcomes[0]["price"]
-        away_team = outcomes[1]["name"]
-        away_odds = outcomes[1]["price"]
-
-        match_data = {
-            "home_team": home_team,
-            "home_odds": home_odds,
-            "away_team": away_team,
-            "away_odds": away_odds,
-            "sport": game["sport_key"],
-            "commence_time": game["commence_time"],
-            "bookmaker": bookmaker["title"]
-        }
-
-        result = ask_gpt_if_bettable(match_data)
-        if result and result.startswith("YES"):
-            confidence = ''.join([c for c in result if c.isdigit()])[:2]
-            bet_text = f"{home_team} to Win"
-            if not is_duplicate(bet_text):
-                push_bet_to_sheet(bet_text, match_data, confidence)
-            else:
-                print(f"[SKIPPED] Duplicate: {bet_text}")
-        else:
-            print(f"[REJECTED] {home_team} vs {away_team} | GPT said: {result}")
-
-    print("[INFO] WinxyBot LIVE Agent finished.")
+    time.sleep(1.5)  # space out API requests safely
