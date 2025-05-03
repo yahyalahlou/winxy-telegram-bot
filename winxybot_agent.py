@@ -19,13 +19,18 @@ def run_agent():
             sport_title = match['sport_title']
             commence_time = match['commence_time']
 
-            confidence_score, reason = calculate_winxy_confidence(
-                team_1=team_1,
-                team_2=team_2,
-                odds_1=odds_1,
-                odds_2=odds_2,
-                sport=sport_title
-            )
+            scraped_data = {
+    "momentum": "strong",
+    "injury": "none",
+    "fatigue": "low"
+}
+
+confidence_score = calculate_winxy_confidence(
+    scraped_data=scraped_data,
+    team_1=team_1,
+    team_2=team_2
+)
+
 
             if confidence_score >= 80:
                 message = (
