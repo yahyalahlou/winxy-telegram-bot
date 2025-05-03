@@ -1,4 +1,4 @@
-def calculate_winxy_confidence(scraped_data):
+def calculate_winxy_confidence(match, team_1=None):
     # Example logic, customize for your needs
     confidence = 50  # base score
     if scraped_data.get("momentum") == "strong":
