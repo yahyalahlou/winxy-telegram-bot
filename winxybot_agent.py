@@ -1,31 +1,30 @@
-import requests
-import os
+import time
+import logging
+from oddsapi_wrapper import fetch_raw_odds_data, get_filtered_matches
+from winxylogic import calculate_winxy_confidence
+from telegram_sender import send_telegram_alert
 
-SPORTS_API_KEY = os.getenv("SPORTS_API_KEY")
+logging.basicConfig(level=logging.DEBUG)
 
-BASE_URL = "https://api.the-odds-api.com/v4/sports"
+def main():
+    logging.info("🔍 DEBUG: Starting scan")
 
-# ✅ Fallback-safe: Grab raw upcoming odds
-
-def fetch_raw_odds_data():
     try:
-        params = {
-            "regions": "us",
-            "markets": "h2h",
-            "oddsFormat": "decimal",
-            "apiKey": SPORTS_API_KEY
-        }
-        url = f"{BASE_URL}/upcoming/odds"
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-        return response.json()
+        matches = get_filtered_matches()
+        logging.info(f"✅ Retrieved {len(matches)} matches")
+
+        for match in matches:
+            confidence = calculate_winxy_confidence(match)
+            if confidence >= 80:
+                logging.info(f"🚀 HIGH CONFIDENCE {confidence}% → {match.get('teams')}")
+                send_telegram_alert(match, confidence)
+            else:
+                logging.info(f"⚠️ Skipping low-confidence match ({confidence}%)")
+
     except Exception as e:
-        print(f"[OddsAPI] FATAL: Failed to fetch raw odds: {e}")
-        return []
+        logging.exception(f"CRITICAL ERROR during scan: {e}")
 
-# 🧠 Filter matches with custom logic
-
-def get_filtered_matches():
-    raw_matches = fetch_raw_odds_data()
-    # ⚠️ Temp: Return raw data only
-    return raw_matches
+if __name__ == "__main__":
+    while True:
+        main()
+        time.sleep(6 * 60 * 60)  # 6 hours between scans
