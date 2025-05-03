@@ -1,4 +1,7 @@
 gspread
 oauth2client
-requests
 openai
+requests
+beautifulsoup4
+lxml
+fake-useragent
