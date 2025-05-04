@@ -14,19 +14,19 @@ def run_agent():
 
         for match in raw_matches:
             try:
-                # Defensive checks
-                if not match.get("bookmakers"):
+                if not match.get('bookmakers'):
                     raise ValueError("Missing bookmakers")
-                markets = match["bookmakers"][0].get("markets", [])
-                if not markets or not markets[0].get("outcomes") or len(markets[0]["outcomes"]) < 2:
-                    raise ValueError("Markets or outcomes incomplete")
 
-                team_1 = markets[0]["outcomes"][0]["name"]
-                team_2 = markets[0]["outcomes"][1]["name"]
-                odds_1 = markets[0]["outcomes"][0]["price"]
-                odds_2 = markets[0]["outcomes"][1]["price"]
-                sport_title = match.get("sport_title", "Unknown")
-                commence_time = match.get("commence_time", "Unknown")
+                markets = match['bookmakers'][0].get('markets', [])
+                if not markets or len(markets[0].get('outcomes', [])) < 2:
+                    raise ValueError("Incomplete market or outcomes data")
+
+                team_1 = markets[0]['outcomes'][0]['name']
+                team_2 = markets[0]['outcomes'][1]['name']
+                odds_1 = markets[0]['outcomes'][0]['price']
+                odds_2 = markets[0]['outcomes'][1]['price']
+                sport_title = match['sport_title']
+                commence_time = match['commence_time']
 
                 scraped_data = {
                     "momentum": "strong",
