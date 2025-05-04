@@ -1,30 +1,30 @@
 import requests
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 
-def scrape_rotowire_nba_injuries():
-    ua = UserAgent()
-    headers = {'User-Agent': ua.random}
-    url = "https://www.rotowire.com/basketball/nba-lineups.php"
-
+def scrape_rotowire_data():
     try:
-        res = requests.get(url, headers=headers, timeout=10)
-        res.raise_for_status()
-        soup = BeautifulSoup(res.text, "lxml")
+        url = "https://www.rotowire.com/injury-report.php"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
 
-        injury_data = []
+        soup = BeautifulSoup(response.text, "html.parser")
+        rows = soup.select("table.injury-table tbody tr")
 
-        for section in soup.select(".lineup.is-nba"):
-            team_name = section.select_one(".lineup__team").text.strip()
-            status_tag = section.select_one(".lineup__status")
-            status = status_tag.text.strip() if status_tag else "Unknown"
+        injury_info = {}
+        for row in rows:
+            cols = row.find_all("td")
+            if len(cols) < 5:
+                continue
+            team = cols[0].text.strip()
+            player = cols[1].text.strip()
+            status = cols[4].text.strip()
 
-            injury_data.append({
-                "team": team_name,
-                "status": status
-            })
+            if team not in injury_info:
+                injury_info[team] = []
+            injury_info[team].append({"player": player, "status": status})
 
-        return injury_data
+        return injury_info
 
     except Exception as e:
-        return [{"error": str(e)}]
+        print(f"[rotowire scraper] ERROR: {e}")
+        return {}
