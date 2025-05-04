@@ -1,30 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 
-def fetch_tennis_elo(player_name):
-    ua = UserAgent()
-    headers = {'User-Agent': ua.random}
-
-    search_url = f"https://www.ultimatetennisstatistics.com/searchPlayer?searchTerm={player_name.replace(' ', '%20')}"
+def scrape_tennis_elo_data():
     try:
-        res = requests.get(search_url, headers=headers, timeout=10)
-        res.raise_for_status()
+        url = "https://tennisabstract.com/recent_elo.html"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        soup = BeautifulSoup(res.text, "lxml")
-        rows = soup.select("table tbody tr")
+        players = []
+        for row in soup.select("table tr")[1:]:
+            cols = row.find_all("td")
+            if len(cols) >= 3:
+                name = cols[0].text.strip()
+                elo = cols[2].text.strip()
+                players.append({"name": name, "elo": elo})
 
-        if not rows:
-            return {"player": player_name, "elo": None, "error": "No match"}
+        return {"elo_ratings": players}
 
-        cells = rows[0].find_all("td")
-        if len(cells) >= 4:
-            return {
-                "player": player_name,
-                "elo": cells[2].text.strip(),
-                "surface_strength": cells[3].text.strip()
-            }
-
-        return {"player": player_name, "elo": None, "error": "Bad format"}
     except Exception as e:
-        return {"player": player_name, "elo": None, "error": str(e)}
+        print(f"[tennis elo scraper] ERROR: {e}")
+        return {}
