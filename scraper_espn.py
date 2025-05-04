@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-def scrape_espn():
+def scrape_espn_data():
     ua = UserAgent()
     headers = {'User-Agent': ua.random}
 
