@@ -6,13 +6,13 @@ BASE_URL = "https://api.the-odds-api.com/v4/sports"
 
 def fetch_raw_odds_data():
     try:
+        url = f"{BASE_URL}/upcoming/odds"
         params = {
             "regions": "us",
             "markets": "h2h",
             "oddsFormat": "decimal",
             "apiKey": ODDS_API_KEY
         }
-        url = f"{BASE_URL}/upcoming/odds"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         return response.json()
