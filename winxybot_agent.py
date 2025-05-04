@@ -14,16 +14,23 @@ def run_agent():
 
         for match in raw_matches:
             try:
-                if not match.get('bookmakers') or not match['bookmakers'][0]['markets']:
-                    continue  # Skip if no bookmaker data
+                bookmakers = match.get('bookmakers', [])
+                if not bookmakers or not bookmakers[0].get('markets'):
+                    raise ValueError("Missing bookmakers or markets")
 
-                team_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['name']
-                team_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['name']
-                odds_1 = match['bookmakers'][0]['markets'][0]['outcomes'][0]['price']
-                odds_2 = match['bookmakers'][0]['markets'][0]['outcomes'][1]['price']
-                sport_title = match['sport_title']
-                commence_time = match['commence_time']
+                outcomes = bookmakers[0]['markets'][0].get('outcomes', [])
+                if len(outcomes) < 2:
+                    raise ValueError("Not enough outcomes")
 
+                team_1 = outcomes[0]['name']
+                team_2 = outcomes[1]['name']
+                odds_1 = outcomes[0]['price']
+                odds_2 = outcomes[1]['price']
+                sport_title = match.get('sport_title', 'Unknown')
+                commence_time = match.get('commence_time', 'Unknown')
+                category = match.get('competition', {}).get('name', 'N/A')
+
+                # Simulated scraped data input (replace with actual logic if available)
                 scraped_data = {
                     "momentum": "strong",
                     "injury": "none",
@@ -41,12 +48,17 @@ def run_agent():
 
                 if confidence_score >= 80:
                     message = (
-                        f"📢 *NEW BET ALERT*\n"
+                        f"📢 NEW BET ALERT\n"
                         f"🏆 Sport: {sport_title}\n"
-                        f"👤 Team 1: {team_1} (Odds: {odds_1})\n"
-                        f"👤 Team 2: {team_2} (Odds: {odds_2})\n"
+                        f"📂 Category: {category}\n"
+                        f"📝 Bet: {team_1} to Win\n"
+                        f"👤 Team/Player 1: {team_1} (Odds: {odds_1})\n"
+                        f"👤 Team/Player 2: {team_2} (Odds: {odds_2})\n"
                         f"💯 Confidence: {confidence_score}%\n"
-                        f"🕒 Match Time: {commence_time}"
+                        f"🕒 Match Time: {commence_time}\n"
+                        f"⚠️ Risk Notes: {scraped_data['injury'].capitalize()} lineup\n"
+                        f"📡 Source: WinxyBot\n"
+                        f"🧩 Parlay OK?: YES"
                     )
                     send_telegram_alert(message)
 
