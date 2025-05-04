@@ -6,6 +6,9 @@ from oddsapi_wrapper import fetch_raw_odds_data
 
 logging.basicConfig(level=logging.INFO)
 
+CONFIDENCE_THRESHOLD = 80
+
+
 def run_agent():
     logging.info("🔍 DEBUG: Starting scan")
     try:
@@ -14,17 +17,20 @@ def run_agent():
 
         for match in raw_matches:
             try:
-                if not match.get('bookmakers'):
+                # Validate structure to avoid missing data
+                bookmakers = match.get("bookmakers", [])
+                if not bookmakers:
                     raise ValueError("Missing bookmakers")
+                markets = bookmakers[0].get("markets", [])
+                if not markets or len(markets[0].get("outcomes", [])) < 2:
+                    raise ValueError("Invalid outcomes")
 
-                markets = match['bookmakers'][0].get('markets', [])
-                if not markets or len(markets[0].get('outcomes', [])) < 2:
-                    raise ValueError("Incomplete market or outcomes data")
+                outcomes = markets[0]["outcomes"]
 
-                team_1 = markets[0]['outcomes'][0]['name']
-                team_2 = markets[0]['outcomes'][1]['name']
-                odds_1 = markets[0]['outcomes'][0]['price']
-                odds_2 = markets[0]['outcomes'][1]['price']
+                team_1 = outcomes[0]['name']
+                team_2 = outcomes[1]['name']
+                odds_1 = outcomes[0]['price']
+                odds_2 = outcomes[1]['price']
                 sport_title = match['sport_title']
                 commence_time = match['commence_time']
 
@@ -43,9 +49,9 @@ def run_agent():
                     sport=sport_title
                 )
 
-                if confidence_score >= 80:
+                if confidence_score >= CONFIDENCE_THRESHOLD:
                     message = (
-                        f"📢 *NEW BET ALERT*\n"
+                        f"\n\n📢 *NEW BET ALERT*\n"
                         f"🏆 Sport: {sport_title}\n"
                         f"👤 Team 1: {team_1} (Odds: {odds_1})\n"
                         f"👤 Team 2: {team_2} (Odds: {odds_2})\n"
@@ -59,6 +65,7 @@ def run_agent():
 
     except Exception as e:
         logging.error(f"❌ Agent run failed: {e}")
+
 
 if __name__ == "__main__":
     run_agent()
