@@ -1,16 +1,41 @@
-def calculate_winxy_confidence(scraped_data=None, **kwargs):
-    if scraped_data is None:
-        scraped_data = {}
+def calculate_winxy_confidence(scraped_data, team_1, team_2, odds_1, odds_2, sport):
+    """
+    Calculate a win confidence score based on scraped context and odds.
+    """
+    confidence = 50  # base score
 
-    # Base score
-    confidence = 50
-
-    # Adjust score based on available scraped data
-    if scraped_data.get("momentum") == "strong":
+    # Adjust for injuries
+    injury = scraped_data.get("injury", "none")
+    if injury == "none":
         confidence += 15
-    if scraped_data.get("injury") == "none":
-        confidence += 20
-    if scraped_data.get("fatigue") == "low":
-        confidence += 10
+    elif injury == "minor":
+        confidence += 5
+    elif injury == "severe":
+        confidence -= 20
 
-    return min(confidence, 100)
+    # Adjust for momentum
+    momentum = scraped_data.get("momentum", "neutral")
+    if momentum == "strong":
+        confidence += 15
+    elif momentum == "weak":
+        confidence -= 10
+
+    # Adjust for fatigue
+    fatigue = scraped_data.get("fatigue", "medium")
+    if fatigue == "low":
+        confidence += 10
+    elif fatigue == "high":
+        confidence -= 10
+
+    # Odds-based modifier (underdog boost or risk normalization)
+    try:
+        odds_ratio = float(odds_2) / float(odds_1)
+        if odds_ratio < 1.1:
+            confidence += 5
+        elif odds_ratio > 1.5:
+            confidence -= 10
+    except Exception:
+        pass
+
+    # Clamp confidence
+    return max(0, min(confidence, 100))
