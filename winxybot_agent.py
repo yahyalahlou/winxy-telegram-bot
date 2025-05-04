@@ -3,11 +3,26 @@ import logging
 from winxylogic import calculate_winxy_confidence
 from telegram_sender import send_telegram_alert
 from oddsapi_wrapper import fetch_raw_odds_data
+from team_scraper_bridge import get_team_factors
 
 logging.basicConfig(level=logging.INFO)
 
+SENT_ALERTS_FILE = "sent_alerts.txt"
+
+def load_sent_alerts():
+    if not os.path.exists(SENT_ALERTS_FILE):
+        return set()
+    with open(SENT_ALERTS_FILE, "r") as f:
+        return set(line.strip() for line in f.readlines())
+
+def save_sent_alert(match_id):
+    with open(SENT_ALERTS_FILE, "a") as f:
+        f.write(f"{match_id}\n")
+
 def run_agent():
     logging.info("🔍 DEBUG: Starting scan")
+    sent_alerts = load_sent_alerts()
+
     try:
         raw_matches = fetch_raw_odds_data()
         logging.info(f"✅ {len(raw_matches)} raw matches fetched from OddsAPI")
@@ -30,12 +45,11 @@ def run_agent():
                 commence_time = match.get('commence_time', 'Unknown')
                 category = match.get('competition', {}).get('name', 'N/A')
 
-                # Simulated scraped data input (replace with actual logic if available)
-                scraped_data = {
-                    "momentum": "strong",
-                    "injury": "none",
-                    "fatigue": "low"
-                }
+                match_id = match.get('id', f"{team_1}_{team_2}_{commence_time}")
+                if match_id in sent_alerts:
+                    continue  # Skip duplicate alert
+
+                scraped_data = get_team_factors(team_1, team_2, sport_title)
 
                 confidence_score = calculate_winxy_confidence(
                     scraped_data=scraped_data,
@@ -61,6 +75,7 @@ def run_agent():
                         f"🧩 Parlay OK?: YES"
                     )
                     send_telegram_alert(message)
+                    save_sent_alert(match_id)
 
             except Exception as inner_err:
                 logging.error(f"⚠️ Error processing match: {inner_err}")
